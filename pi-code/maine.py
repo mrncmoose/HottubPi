@@ -83,15 +83,10 @@ class Controller():
             self.mode = "STANDBY"
             self.set_pump_level('OFF')
 
-    def heating(self, setpoint):
-        self.mode = "HEATING"
-        GPIO.output(config['GPIO']['heat'], GPIO.HIGH)
-        self.set_pump_level('LOW')
-        if setpoint <= config['limits']['max_temp']:
-            self.temp_setpoint = setpoint
-        else:
-            self.temp_setpoint = config['limits']['max_temp']
-        return self.hold_temp()
+    def setTempSetpoint(self, setpoint: float):
+        if setpoint > config['limits']['max_temp']:
+            setpoint = config['limits']['max_temp']
+        self.temp_setpoint = setpoint
 
     def set_pump_level(self, level):
         if level == 'OFF':
@@ -140,6 +135,7 @@ if __name__ == '__main__':
             controller.filtering_on()
         if filterOff[0] == now.tm_hour and filterOff[1] == now.tm_min:
             controller.filtering_off()
-
+        currentTemp = controller.hold_temp()
+        logging.info('Current temperature: {} C'.format(currentTemp))
         time.sleep(1)
         
