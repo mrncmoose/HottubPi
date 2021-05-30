@@ -1,0 +1,12 @@
+django
+djangorestframework
+django-rest-auth
+coreapi
+django-bootstrap4
+django-bootstrap-datepicker-plus
+requests
+configparser
+cryptography
+pyopenssl
+Dumper
+pytz
