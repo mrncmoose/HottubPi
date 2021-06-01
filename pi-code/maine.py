@@ -99,12 +99,22 @@ class Controller():
             GPIO.output(config['GPIO']['pump_low'], GPIO.HIGH)
             GPIO.output(config['GPIO']['pump_high'], GPIO.LOW)       
 
+    def doFiltering(self):
+        now =  time.localtime()
+        filterOn = config['filter_on'].split(':')
+        filterOff = config['filter_off'].split(':')
+        if filterOn[0] == now.tm_hour and filterOn[1] == now.tm_min:
+            controller.filtering_on()
+        if filterOff[0] == now.tm_hour and filterOff[1] == now.tm_min:
+            controller.filtering_off()        
+
     def hold_temp(self):
         currentTemp = self.getCurrentTemp()
         if currentTemp > self.temp_setpoint + 1.0:
             GPIO.output(config['GPIO']['heat'], GPIO.LOW) 
         if currentTemp <= self.temp_setpoint -0.5:
             GPIO.output(config['GPIO']['heat'], GPIO.HIGH)
+        self.doFiltering()
 
         return currentTemp
 
@@ -128,13 +138,6 @@ if __name__ == '__main__':
     controller = Controller()
 
     while True:
-        now =  time.localtime()
-        filterOn = config['filter_on'].split(':')
-        filterOff = config['filter_off'].split(':')
-        if filterOn[0] == now.tm_hour and filterOn[1] == now.tm_min:
-            controller.filtering_on()
-        if filterOff[0] == now.tm_hour and filterOff[1] == now.tm_min:
-            controller.filtering_off()
         currentTemp = controller.hold_temp()
         logging.info('Current temperature: {} C'.format(currentTemp))
         time.sleep(1)

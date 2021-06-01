@@ -101,3 +101,4 @@ class HttpBridge(object):
             time.sleep(loopDelay)
             self.getEvents()
             self.putReadings()
+    

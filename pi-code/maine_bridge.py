@@ -12,7 +12,7 @@ if __name__ == '__main__':
                     choices=['DEBUG', 'INFO', 'WARNING', 'ERROR'])
     parser.add_argument("--loopDelay",
                         help="The number of seconds to wait in the listening loop",
-                        default="20")
+                        default="15")
     args = parser.parse_args()
 
     lg = logging.getLogger(__name__)
