@@ -33,19 +33,5 @@ except Exception as e:
     logging.fatal('Unable to find api credintails in environment.  Exiting.')
     SystemExit(1)
 
-tempertureURI = '/thermal/api/v1.0/current_temp'
-eventURI = '/thermal/api/v1.0/events'
-runningURI = '/thermal/api/v1.0/isFurnaceOn'
-
-#The server the 'world' will interact with via it's API's.
-#Polling isn't the best way to do this, but HTTP is currently the only protocol working.
-centralServer = { 'baseURL': 'https://iotsmartcontroller.appspot.com',
-                 'eventURI': '/iot/api/thermal-events/',
-                 'currentReadingURI': '/iot/api/thing-data/',
-                 'thingsURI': '/iot/api/things/'
-                 }
-# centralServer = { 'baseURL': 'http://10.0.0.9:8000',
-#                  'eventURI': '/iot/api/thermal-events/',
-#                  'currentReadingURI': '/iot/api/thing-data/',
-#                  'thingsURI': '/iot/api/things/'
-#                  }
+thingDataUri = '/iot/api/thing-data/'
+thingSetPointUri = '/iot/api/thing-setpoint'

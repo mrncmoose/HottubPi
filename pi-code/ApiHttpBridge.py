@@ -9,29 +9,28 @@ import json
 import datetime
 from pytz import timezone
 import pytz
-
 from requests.auth import HTTPBasicAuth
-
-from Config import *
+from config import *
 
 class HttpBridge(object):
     
     def __init__(self, *args, **kwargs):       
         self.blogger = logging.getLogger(__name__)
         
-    def putReadings(self):
+    def getSetpoint(self):
         res = None
         #localTz = timezone('US/Eastern')
         utc = pytz.utc
         try:
-            url = baseURL + tempertureURI
-            res = requests.get(url, auth=HTTPBasicAuth(localApiUser, localApiPass), verify=True)
+            url = baseUrl + thingSetPointUri
+            res = requests.get(url, auth=HTTPBasicAuth(apiUser, apiPass), verify=True)
             if re.search(r'4\d+|5\d+', str(res.status_code)):
                 raise Exception('Unable to get temperature from controller with HTTP return code of {}'.format(res.status_code))
             
         except Exception as e:
-            self.blogger.error('Unable to get readings from local controller for reason: {}'.format(e))
+            self.blogger.error('Unable to read setpoints from server {} for reason: {}'.format(url, e))
             return False
+        #TODO Update to process the setpoints, including deleting them from the server.
         try:
             url = centralServer['baseURL'] + centralServer['currentReadingURI']
             tempMes = res.json()
