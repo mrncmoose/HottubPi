@@ -88,6 +88,12 @@ class Controller():
             setpoint = config['limits']['max_temp']
         self.temp_setpoint = setpoint
 
+    def setLight(self, lightVal: bool):
+        if lightVal:
+            GPIO.output(config['GPIO']['light'], GPIO.HIGH)
+        else:
+            GPIO.output(config['GPIO']['light'], GPIO.LOW)
+
     def set_pump_level(self, level):
         if level == 'OFF':
             GPIO.output(config['GPIO']['pump_low'], GPIO.LOW)
@@ -116,8 +122,6 @@ class Controller():
             GPIO.output(config['GPIO']['heat'], GPIO.HIGH)
         self.doFiltering()
 
-        return currentTemp
-
 ##----------------- End of class
 
 def exit_clean(signum, frame):
@@ -138,7 +142,8 @@ if __name__ == '__main__':
     controller = Controller()
 
     while True:
-        currentTemp = controller.hold_temp()
+        controller.hold_temp()
+        currentTemp = controller.getCurrentTemp()
         logging.info('Current temperature: {} C'.format(currentTemp))
         time.sleep(1)
         

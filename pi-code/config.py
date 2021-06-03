@@ -35,3 +35,5 @@ except Exception as e:
 
 thingDataUri = '/iot/api/thing-data/'
 thingSetPointUri = '/iot/api/thing-setpoint'
+thingLoopDelay = 120        # The number of seconds for the thingy to wait in it's main processing loop
+ourThingId = 4
