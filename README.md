@@ -22,3 +22,4 @@
 |  DS18b20 VCC (3.3V)      | NA                | 1             |
 |  DS18b20: SIG            | O4	               | 7             |
 |  DS18b20: GND            | NA                | 9             |
+
