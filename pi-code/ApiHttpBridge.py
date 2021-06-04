@@ -20,8 +20,12 @@ class HttpBridge(object):
         self.controller = Controller()
         self.controller.hold_temp()
         
-    def removeSetPoints(self):
-
+    def removeSetPoints(self, pk=None):
+        if pk != None:
+            url = baseUrl + thingSetPointUri + '\{}'.format(pk)
+            res = requests.delete(url, auth=HTTPBasicAuth(apiUser, apiPass), verify=True)
+            if re.search(r'4\d+|5\d+', str(res.status_code)):
+                raise Exception('Unable to delete setpoint data with HTTP return code of {}'.format(res.status_code))
         
     def getSetpoint(self):
         res = None
@@ -48,6 +52,7 @@ class HttpBridge(object):
                         if item['name'] == 'Pump':
                             pVal = str(item['value'])
                             self.controller.set_pump_level(pVal.capitalize)
+                        self.removeSetPoints(self, item['id'])
         except Exception as e:
             self.blogger.error('Unable to read setpoints from server {} for reason: {}'.format(url, e))
             return False
