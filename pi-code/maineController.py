@@ -41,7 +41,7 @@ class Controller():
         self.temp_sensor_path = config['temp_sensor_path']
         self.temp_cal_m = config['temp_cal_m']
         self.temp_cal_b = config['temp_cal_b']
-        self.temp_setpoint = config['limits'].['min_temp']
+        self.temp_setpoint = config['limits']['min_temp']
         GPIO.setwarnings(False)
         GPIO.setmode(GPIO.BCM)
         # Set relay pins as output

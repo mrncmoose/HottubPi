@@ -1,6 +1,6 @@
-# In loop, call IoT catalog for instructions
-#import http.client
 import logging
+import argparse
+import signal
 import requests
 import os
 import time
@@ -84,4 +84,21 @@ class HttpBridge(object):
             self.getSetpoint()
             self.putReadings()
             self.controller.hold_temp()
-    
+
+def exit_clean(signum, frame):
+    print('Exiting on kill signal')
+    GPIO.cleanup()
+    sys.exit(0)
+
+if __name__ == '__main__':
+    signal.signal(signal.SIGTERM, exit_clean)
+    signal.signal(signal.SIGABRT, exit_clean)
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--log_level", 
+                    help="The level of log messages to log", 
+                    default="INFO", 
+                    choices=['DEBUG', 'INFO', 'WARNING', 'ERROR'])
+    args = parser.parse_args()
+    maineBridge = HttpBridge()
+    maineBridge.run()
