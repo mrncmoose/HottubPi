@@ -14,7 +14,7 @@ import logging.handlers
 import threading
 import signal
 
-from Config import config
+from config import config
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--log_level", 
@@ -57,7 +57,7 @@ class Controller():
 
     def getCurrentTemp(self):
         # append the device file name to get the absolute path of the sensor 
-        fileobj = open(self.self.temp_sensor_path,'r')
+        fileobj = open(self.temp_sensor_path,'r')
         lines = fileobj.readlines()
         fileobj.close()
         myRegex = re.compile(r"=")
