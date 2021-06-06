@@ -15,7 +15,7 @@ config = {
     },
     "filter_on": '09:30:00',
     'filter_off': '12:30:00',
-    'temp_sensor_path': ' /sys/bus/w1/devices/28-0118410baaff/w1_slave',
+    'temp_sensor_path': '/sys/bus/w1/devices/28-0118410baaff/w1_slave',
     'temp_cal_m': 1.0,
     'temp_cal_b': 0.0,
 }
