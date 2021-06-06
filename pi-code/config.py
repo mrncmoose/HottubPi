@@ -28,7 +28,7 @@ baseUrl = None
 try:
     apiUser = os.getenv('API_USER')
     apiPass = os.getenv('API_PASSWD')
-    baseURL = os.getenv('API_BASE_URL')
+    baseUrl = os.getenv('API_BASE_URL')
 except Exception as e:
     logging.fatal('Unable to find api credintails in environment.  Exiting.')
     SystemExit(1)
@@ -37,3 +37,4 @@ thingDataUri = '/iot/api/thing-data/'
 thingSetPointUri = '/iot/api/thing-setpoint'
 thingLoopDelay = 120        # The number of seconds for the thingy to wait in it's main processing loop
 ourThingId = 4
+httpListenerLoopDelaySeconds = 10

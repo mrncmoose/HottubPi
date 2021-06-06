@@ -22,7 +22,7 @@ class HttpBridge(object):
         
     def removeSetPoints(self, pk=None):
         if pk != None:
-            url = baseUrl + thingSetPointUri + '\{}'.format(pk)
+            url = baseUrl + thingSetPointUri + '/{}'.format(pk)
             res = requests.delete(url, auth=HTTPBasicAuth(apiUser, apiPass), verify=True)
             if re.search(r'4\d+|5\d+', str(res.status_code)):
                 raise Exception('Unable to delete setpoint data with HTTP return code of {}'.format(res.status_code))
@@ -31,8 +31,8 @@ class HttpBridge(object):
         res = None
         #localTz = timezone('US/Eastern')
         utc = pytz.utc
+        url = baseUrl + thingSetPointUri
         try:
-            url = baseUrl + thingSetPointUri
             res = requests.get(url, auth=HTTPBasicAuth(apiUser, apiPass), verify=True)
             if re.search(r'4\d+|5\d+', str(res.status_code)):
                 raise Exception('Unable to get setpoint data with HTTP return code of {}'.format(res.status_code))
@@ -52,7 +52,7 @@ class HttpBridge(object):
                         if item['name'] == 'Pump':
                             pVal = str(item['value'])
                             self.controller.set_pump_level(pVal.capitalize)
-                        self.removeSetPoints(self, item['id'])
+                        self.removeSetPoints(pk=item['id'])
         except Exception as e:
             self.blogger.error('Unable to read setpoints from server {} for reason: {}'.format(url, e))
             return False
@@ -69,20 +69,20 @@ class HttpBridge(object):
                 'dataValue': '{}'.format(currentTemp),
                 'thing': ourThingId
             }
-            res = requests.post(url, json=msg, auth=HTTPBasicAuth(os.environ['THING_OWNER'], os.environ['THING_PASSWORD']), verify=True)
+            res = requests.post(url, json=msg, auth=HTTPBasicAuth(apiUser, apiPass), verify=True)
             if re.search(r'4\d+|5\d+', str(res.status_code)):
                 raise Exception('Unable to post thermal data to server {} with HTTP return code of {}'.format(url, res.status_code))
             return True
         except Exception as e:
-            self.blogger.error('Unable to send event for reason: {}'.format(e))
+            self.blogger.error('Unable to send thermal data for reason: {}'.format(e))
             
         return False
             
-    def run(self, loopDelay=600):
+    def run(self, loopDelay=10):
         while True:
             time.sleep(loopDelay)
             self.getSetpoint()
-            self.putReadings()
+            self.sendData()
             self.controller.hold_temp()
 
 def exit_clean(signum, frame):
@@ -101,4 +101,4 @@ if __name__ == '__main__':
                     choices=['DEBUG', 'INFO', 'WARNING', 'ERROR'])
     args = parser.parse_args()
     maineBridge = HttpBridge()
-    maineBridge.run()
+    maineBridge.run(httpListenerLoopDelaySeconds)
