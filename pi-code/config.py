@@ -9,8 +9,9 @@ config = {
         "light": 23
     },
     "limits": {
-        "max_temp": 30,
+        "max_temp": 42,
         "min_temp": 5,
+        "control_window": 1.0,
         "max_at_temp_hours": 1,
     },
     "filter_on": '09:30:00',

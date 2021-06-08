@@ -42,10 +42,16 @@ class HttpBridge(object):
                     if item['name']:                     
                         if item['name'] == 'Temperature':
                             tempVal = float(item['value'])
+                            try:
+                                ctlWindow = float(item['controlWindow'])
+                                self.controller.setTempControlWindow(ctlWindow)
+                            except Exception as e:
+                                self.blogger.warn('Unable to set the control window.  Using default of 1.0')
+                                self.controller.setTempControlWindow(1.0)
                             self.controller.setTempSetpoint(tempVal)
                         if item['name'] == 'Light':
-                            lVal = str(item['value'])
-                            if lVal == 'On':
+                            lVal = str(item['value']).capitalize
+                            if lVal == 'ON':
                                 self.controller.setLight(True)
                             else:
                                 self.controller.setLight(False)

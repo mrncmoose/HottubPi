@@ -42,6 +42,7 @@ class Controller():
         self.temp_cal_m = config['temp_cal_m']
         self.temp_cal_b = config['temp_cal_b']
         self.temp_setpoint = config['limits']['min_temp']
+        self.temp_window = config['limits']['control_window']
         GPIO.setwarnings(False)
         GPIO.setmode(GPIO.BCM)
         # Set relay pins as output
@@ -86,7 +87,12 @@ class Controller():
     def setTempSetpoint(self, setpoint: float):
         if setpoint > config['limits']['max_temp']:
             setpoint = config['limits']['max_temp']
+        if setpoint < config['limits']['min_temp']:
+            setpoint = config['limits']['min_temp']
         self.temp_setpoint = setpoint
+
+    def setTempControlWindow(self, window: float):
+        self.temp_window = window
 
     def setLight(self, lightVal: bool):
         if lightVal:
@@ -116,9 +122,9 @@ class Controller():
 
     def hold_temp(self):
         currentTemp = self.getCurrentTemp()
-        if currentTemp > self.temp_setpoint + 1.0:
+        if currentTemp > self.temp_setpoint + (self.temp_window/2):
             GPIO.output(config['GPIO']['heat'], GPIO.LOW) 
-        if currentTemp <= self.temp_setpoint -0.5:
+        if currentTemp <= self.temp_setpoint - (self.temp_window/2):
             GPIO.output(config['GPIO']['heat'], GPIO.HIGH)
         self.doFiltering()
 
