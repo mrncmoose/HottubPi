@@ -50,14 +50,16 @@ class HttpBridge(object):
                                 self.controller.setTempControlWindow(1.0)
                             self.controller.setTempSetpoint(tempVal)
                         if item['name'] == 'Light':
-                            lVal = str(item['value']).capitalize
-                            if lVal == 'ON':
+                            lVal = str(item['value'])
+                            lightVal = lVal.casefold()
+                            self.blogger.warning('Value of light: {}'.format(lightVal))
+                            if lightVal == 'ON'.casefold():
                                 self.controller.setLight(True)
                             else:
                                 self.controller.setLight(False)
                         if item['name'] == 'Pump':
-                            pVal = str(item['value'])
-                            self.controller.set_pump_level(pVal.capitalize)
+                            pVal = str(item['value']).capitalize()
+                            self.controller.set_pump_level(pVal)
                         self.removeSetPoints(pk=item['id'])
         except Exception as e:
             self.blogger.error('Unable to read setpoints from server {} for reason: {}'.format(url, e))

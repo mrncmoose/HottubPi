@@ -90,6 +90,7 @@ class Controller():
         if setpoint < config['limits']['min_temp']:
             setpoint = config['limits']['min_temp']
         self.temp_setpoint = setpoint
+        eventLogger.info('Temperature now set to {} C'.format(setpoint))
 
     def setTempControlWindow(self, window: float):
         self.temp_window = window
@@ -97,10 +98,13 @@ class Controller():
     def setLight(self, lightVal: bool):
         if lightVal:
             GPIO.output(config['GPIO']['light'], GPIO.HIGH)
+            eventLogger.info('Turning light to ON')
         else:
             GPIO.output(config['GPIO']['light'], GPIO.LOW)
+            eventLogger.info('Turning light to Off')
 
     def set_pump_level(self, level):
+        eventLogger.info('Turning pump to {}'.format(level))
         if level == 'OFF':
             GPIO.output(config['GPIO']['pump_low'], GPIO.LOW)
             GPIO.output(config['GPIO']['pump_high'], GPIO.LOW)
@@ -109,7 +113,7 @@ class Controller():
             GPIO.output(config['GPIO']['pump_high'], GPIO.HIGH)
         if level == 'LOW':
             GPIO.output(config['GPIO']['pump_low'], GPIO.HIGH)
-            GPIO.output(config['GPIO']['pump_high'], GPIO.LOW)       
+            GPIO.output(config['GPIO']['pump_high'], GPIO.LOW) 
 
     def doFiltering(self):
         now =  time.localtime()
@@ -117,8 +121,10 @@ class Controller():
         filterOff = config['filter_off'].split(':')
         if filterOn[0] == now.tm_hour and filterOn[1] == now.tm_min:
             controller.filtering_on()
+            eventLogger.info('Filtering on')
         if filterOff[0] == now.tm_hour and filterOff[1] == now.tm_min:
-            controller.filtering_off()        
+            controller.filtering_off()
+            eventLogger.info('Filtering off')        
 
     def hold_temp(self):
         currentTemp = self.getCurrentTemp()
