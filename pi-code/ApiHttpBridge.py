@@ -52,7 +52,7 @@ class HttpBridge(object):
                         if item['name'] == 'Light':
                             lVal = str(item['value'])
                             lightVal = lVal.casefold()
-                            self.blogger.warning('Value of light: {}'.format(lightVal))
+                            self.blogger.debug('Value of light: {}'.format(lightVal))
                             if lightVal == 'ON'.casefold():
                                 self.controller.setLight(True)
                             else:

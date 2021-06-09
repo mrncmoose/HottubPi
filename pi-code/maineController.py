@@ -128,11 +128,14 @@ class Controller():
 
     def hold_temp(self):
         currentTemp = self.getCurrentTemp()
+        eventLogger.info('Set point temperature: {} C'.format(self.temp_setpoint))
         if currentTemp > self.temp_setpoint + (self.temp_window/2):
             GPIO.output(config['GPIO']['heat'], GPIO.LOW) 
-        if currentTemp <= self.temp_setpoint - (self.temp_window/2):
+        if currentTemp <= self.temp_setpoint - self.temp_window:
             GPIO.output(config['GPIO']['heat'], GPIO.HIGH)
         self.doFiltering()
+        if not (GPIO.input(config['GPIP']['pump_low']) or GPIO.input(config['GPIP']['pump_high'])):
+          GPIO.output(config['GPIP']['pump_low'], GPIO.HIGH)
 
 ##----------------- End of class
 
