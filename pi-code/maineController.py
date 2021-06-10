@@ -43,6 +43,7 @@ class Controller():
         self.temp_cal_b = config['temp_cal_b']
         self.temp_setpoint = config['limits']['min_temp']
         self.temp_window = config['limits']['control_window']
+        self.pump_mode = 'OFF'
         GPIO.setwarnings(False)
         GPIO.setmode(GPIO.BCM)
         # Set relay pins as output
@@ -104,6 +105,7 @@ class Controller():
             eventLogger.info('Turning light to Off')
 
     def set_pump_level(self, level):
+        self.pump_mode = level
         eventLogger.info('Turning pump to {}'.format(level))
         if level == 'OFF':
             GPIO.output(config['GPIO']['pump_low'], GPIO.LOW)
@@ -127,15 +129,22 @@ class Controller():
             eventLogger.info('Filtering off')        
 
     def hold_temp(self):
+        eventLogger.info('Heating: {}'.format(GPIO.input(config['GPIO']['heat'])))
+        eventLogger.info('Pump low: {}\t Pump High: {}'.format(GPIO.input(config['GPIO']['pump_low']), GPIO.input(config['GPIO']['pump_high'])))
+        eventLogger.info('Mode: {}'.format(self.mode))
+    #TODO  pump_mode does not correctly reflect state of pump.
+        eventLogger.info('Pump: {}'.format(self.pump_mode))
         currentTemp = self.getCurrentTemp()
         eventLogger.info('Set point temperature: {} C'.format(self.temp_setpoint))
         if currentTemp > self.temp_setpoint + (self.temp_window/2):
-            GPIO.output(config['GPIO']['heat'], GPIO.LOW) 
+            GPIO.output(config['GPIO']['heat'], GPIO.LOW)
+            self.mode = 'STANDBY'
         if currentTemp <= self.temp_setpoint - self.temp_window:
             GPIO.output(config['GPIO']['heat'], GPIO.HIGH)
+            self.mode = 'HEATING'
         self.doFiltering()
-        if not (GPIO.input(config['GPIP']['pump_low']) or GPIO.input(config['GPIP']['pump_high'])):
-          GPIO.output(config['GPIP']['pump_low'], GPIO.HIGH)
+        if not (GPIO.input(config['GPIO']['pump_low']) or GPIO.input(config['GPIO']['pump_high'])):
+          self.set_pump_level('LOW')
 
 ##----------------- End of class
 
@@ -159,6 +168,6 @@ if __name__ == '__main__':
     while True:
         controller.hold_temp()
         currentTemp = controller.getCurrentTemp()
-        logging.info('Current temperature: {} C'.format(currentTemp))
+        #logging.info('Current temperature: {} C'.format(currentTemp))
         time.sleep(1)
         
