@@ -6,7 +6,8 @@ config = {
         "heat": 17,
         "pump_low": 27,
         "pump_high": 22,
-        "light": 23
+        "light": 23,
+        "water_level": 24
     },
     "limits": {
         "max_temp": 42,

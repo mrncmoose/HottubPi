@@ -20,3 +20,6 @@ class Setpoint(models.Model):
      )
     light = models.BooleanField(default=False)
 
+    def __str__(self) -> str:
+        return '{0} C - {1} - light {2}'.format(self.temperature, self.pumpSpeed, self.light)
+    

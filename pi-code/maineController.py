@@ -51,6 +51,7 @@ class Controller():
         GPIO.setup(config['GPIO']['pump_low'], GPIO.OUT)
         GPIO.setup(config['GPIO']['pump_high'], GPIO.OUT)
         GPIO.setup(config['GPIO']['light'], GPIO.OUT)
+        GPIO.setup(config['GPIO']['water_level'], GPIO.IN)
         #initialize to off
         GPIO.output(config['GPIO']['heat'], GPIO.LOW)
         GPIO.output(config['GPIO']['pump_low'], GPIO.LOW)
@@ -107,15 +108,21 @@ class Controller():
     def set_pump_level(self, level):
         self.pump_mode = level
         eventLogger.info('Turning pump to {}'.format(level))
-        if level == 'OFF':
+        waterLevel = GPIO.input(config['GPIO']['water_level'])
+        if not waterLevel:
+            if level == 'OFF':
+                GPIO.output(config['GPIO']['pump_low'], GPIO.LOW)
+                GPIO.output(config['GPIO']['pump_high'], GPIO.LOW)
+            if level == 'HIGH':
+                GPIO.output(config['GPIO']['pump_low'], GPIO.LOW)
+                GPIO.output(config['GPIO']['pump_high'], GPIO.HIGH)
+            if level == 'LOW':
+                GPIO.output(config['GPIO']['pump_low'], GPIO.HIGH)
+                GPIO.output(config['GPIO']['pump_high'], GPIO.LOW) 
+        else:
             GPIO.output(config['GPIO']['pump_low'], GPIO.LOW)
             GPIO.output(config['GPIO']['pump_high'], GPIO.LOW)
-        if level == 'HIGH':
-            GPIO.output(config['GPIO']['pump_low'], GPIO.LOW)
-            GPIO.output(config['GPIO']['pump_high'], GPIO.HIGH)
-        if level == 'LOW':
-            GPIO.output(config['GPIO']['pump_low'], GPIO.HIGH)
-            GPIO.output(config['GPIO']['pump_high'], GPIO.LOW) 
+            eventLogger.warn('Low water level detected!  Unable to turn pump on.')                
 
     def doFiltering(self):
         now =  time.localtime()
@@ -134,17 +141,21 @@ class Controller():
         eventLogger.info('Mode: {}'.format(self.mode))
     #TODO  pump_mode does not correctly reflect state of pump.
         eventLogger.info('Pump: {}'.format(self.pump_mode))
-        currentTemp = self.getCurrentTemp()
-        eventLogger.info('Set point temperature: {} C'.format(self.temp_setpoint))
-        if currentTemp > self.temp_setpoint + (self.temp_window/2):
+        if not GPIO.input(GPIO.input(config['GPIO']['water_level'])):
+            currentTemp = self.getCurrentTemp()
+            eventLogger.info('Set point temperature: {} C'.format(self.temp_setpoint))
+            if currentTemp > self.temp_setpoint + (self.temp_window/2):
+                GPIO.output(config['GPIO']['heat'], GPIO.LOW)
+                self.mode = 'STANDBY'
+            if currentTemp <= self.temp_setpoint - self.temp_window:
+                GPIO.output(config['GPIO']['heat'], GPIO.HIGH)
+                self.mode = 'HEATING'
+            self.doFiltering()
+            if not (GPIO.input(config['GPIO']['pump_low']) or GPIO.input(config['GPIO']['pump_high'])):
+                self.set_pump_level('LOW')
+        else:
             GPIO.output(config['GPIO']['heat'], GPIO.LOW)
-            self.mode = 'STANDBY'
-        if currentTemp <= self.temp_setpoint - self.temp_window:
-            GPIO.output(config['GPIO']['heat'], GPIO.HIGH)
-            self.mode = 'HEATING'
-        self.doFiltering()
-        if not (GPIO.input(config['GPIO']['pump_low']) or GPIO.input(config['GPIO']['pump_high'])):
-          self.set_pump_level('LOW')
+            eventLogger.warn('Low water level detected.  Unable to turn water or heat on.')
 
 ##----------------- End of class
 
