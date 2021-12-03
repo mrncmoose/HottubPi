@@ -71,12 +71,32 @@ class HttpBridge(object):
             url = baseUrl + thingDataUri
             currentTemp = self.controller.getCurrentTemp()
             d = datetime.datetime.now()
-            msg = {
-                'ttReadTime': '{}'.format(d.strftime('%Y-%m-%dT:%H:%M:%M')),
-                'sensorType': 1,
-                'dataValue': '{}'.format(currentTemp),
-                'thing': ourThingId
-            }
+            msg = [
+                    {
+                    'ttReadTime': '{}'.format(d.strftime('%Y-%m-%dT:%H:%M:%M')),
+                    'sensorType': sensorTypes['temperature'],
+                    'dataValue': '{}'.format(currentTemp),
+                    'thing': ourThingId
+                },
+                {
+                    'ttReadTime': '{}'.format(d.strftime('%Y-%m-%dT:%H:%M:%M')),
+                    'sensorType': sensorTypes['heat'],
+                    'dataValue': '{}'.format(self.controller.isHeating),
+                    'thing': ourThingId                    
+                },
+                {
+                    'ttReadTime': '{}'.format(d.strftime('%Y-%m-%dT:%H:%M:%M')),
+                    'sensorType': sensorTypes['two speed motor'],
+                    'dataValue': '{}'.format(self.controller.pump_mode),
+                    'thing': ourThingId                       
+                },
+                {
+                    'ttReadTime': '{}'.format(d.strftime('%Y-%m-%dT:%H:%M:%M')),
+                    'sensorType': sensorTypes['water_level'],
+                    'dataValue': '{}'.format(self.controller.isWaterLevel),
+                    'thing': ourThingId                       
+                }
+            ]
             res = requests.post(url, json=msg, auth=HTTPBasicAuth(apiUser, apiPass), verify=True)
             if re.search(r'4\d+|5\d+', str(res.status_code)):
                 raise Exception('Unable to post thermal data to server {} with HTTP return code of {}'.format(url, res.status_code))

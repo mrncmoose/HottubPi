@@ -1,6 +1,6 @@
 mkdir .venv
 python3 -m venv .venv
-.venv\Scripts\activate.bat
+. .venv/bin/activate
 pip3 install -r requirements.txt
 django-admin startproject hot_tub
 cd hot_tub

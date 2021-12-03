@@ -44,6 +44,9 @@ class Controller():
         self.temp_setpoint = config['limits']['min_temp']
         self.temp_window = config['limits']['control_window']
         self.pump_mode = 'OFF'
+        self.isHeating = False
+        self.isLightOn = False
+        self.isWaterLevel = False
         GPIO.setwarnings(False)
         GPIO.setmode(GPIO.BCM)
         # Set relay pins as output
@@ -73,7 +76,7 @@ class Controller():
             eventLogger.info("Temperature\t " + str(tempVal))
             tempRetVal = (tempVal * self.temp_cal_m) + self.temp_cal_b
         else:
-            eventLogger.warn("Got bad crc reading temperature sensor")
+            eventLogger.warning("Got bad crc reading temperature sensor")
         return tempRetVal
 
     def filtering_on(self):
@@ -100,16 +103,18 @@ class Controller():
     def setLight(self, lightVal: bool):
         if lightVal:
             GPIO.output(config['GPIO']['light'], GPIO.HIGH)
+            self.isLightOn = True
             eventLogger.info('Turning light to ON')
         else:
             GPIO.output(config['GPIO']['light'], GPIO.LOW)
+            self.isLightOn = False
             eventLogger.info('Turning light to Off')
 
     def set_pump_level(self, level):
         self.pump_mode = level
         eventLogger.info('Turning pump to {}'.format(level))
-        waterLevel = GPIO.input(config['GPIO']['water_level'])
-        if not waterLevel:
+        waterLevel = (not GPIO.input(config['GPIO']['water_level'])) or config['testMode']
+        if waterLevel:
             if level == 'OFF':
                 GPIO.output(config['GPIO']['pump_low'], GPIO.LOW)
                 GPIO.output(config['GPIO']['pump_high'], GPIO.LOW)
@@ -122,7 +127,7 @@ class Controller():
         else:
             GPIO.output(config['GPIO']['pump_low'], GPIO.LOW)
             GPIO.output(config['GPIO']['pump_high'], GPIO.LOW)
-            eventLogger.warn('Low water level detected!  Unable to turn pump on.')                
+            eventLogger.warning('Low water level detected!  Unable to turn pump on.')                
 
     def doFiltering(self):
         now =  time.localtime()
@@ -136,26 +141,32 @@ class Controller():
             eventLogger.info('Filtering off')        
 
     def hold_temp(self):
+        eventLogger.info('Test mode {}'.format(config['testMode']))
         eventLogger.info('Heating: {}'.format(GPIO.input(config['GPIO']['heat'])))
+        eventLogger.info('Heating flag: {}'.format(self.isHeating))
         eventLogger.info('Pump low: {}\t Pump High: {}'.format(GPIO.input(config['GPIO']['pump_low']), GPIO.input(config['GPIO']['pump_high'])))
         eventLogger.info('Mode: {}'.format(self.mode))
+        self.isWaterLevel = not GPIO.input(config['GPIO']['water_level'])
+        eventLogger.info('Water level: {}'.format(self.isWaterLevel))
+        eventLogger.info('Current setpoints: temp {}\tpump {}\t mode {}'.format(self.temp_setpoint, self.pump_mode, self.mode))
     #TODO  pump_mode does not correctly reflect state of pump.
-        eventLogger.info('Pump: {}'.format(self.pump_mode))
-        if not GPIO.input(GPIO.input(config['GPIO']['water_level'])):
+        if not GPIO.input(config['GPIO']['water_level']) or config['testMode']:
             currentTemp = self.getCurrentTemp()
-            eventLogger.info('Set point temperature: {} C'.format(self.temp_setpoint))
             if currentTemp > self.temp_setpoint + (self.temp_window/2):
                 GPIO.output(config['GPIO']['heat'], GPIO.LOW)
+                self.isHeating = False
                 self.mode = 'STANDBY'
             if currentTemp <= self.temp_setpoint - self.temp_window:
                 GPIO.output(config['GPIO']['heat'], GPIO.HIGH)
+                self.isHeating = True
                 self.mode = 'HEATING'
             self.doFiltering()
             if not (GPIO.input(config['GPIO']['pump_low']) or GPIO.input(config['GPIO']['pump_high'])):
                 self.set_pump_level('LOW')
         else:
             GPIO.output(config['GPIO']['heat'], GPIO.LOW)
-            eventLogger.warn('Low water level detected.  Unable to turn water or heat on.')
+            self.isHeating = False
+            eventLogger.warning('Low water level detected.  Unable to turn water or heat on.')
 
 ##----------------- End of class
 

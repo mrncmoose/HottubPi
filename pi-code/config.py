@@ -20,6 +20,15 @@ config = {
     'temp_sensor_path': '/sys/bus/w1/devices/28-0118410baaff/w1_slave',
     'temp_cal_m': 1.0,
     'temp_cal_b': 0.0,
+    'testMode': True
+}
+
+# Key values for Sensor types
+sensorTypes = {
+    'temperature': 1,
+    'two speed motor': 7,
+    'heat': 8,
+    'water_level': 6
 }
 
 #All credentials are in environment vars
